@@ -39,6 +39,8 @@ paths:
           schema:
             type: string
             minLength: 1
+            maxLength: 80
+            pattern: '^[a-z0-9-]+$'
       responses:
         "200":
           description: Scenario
@@ -48,6 +50,24 @@ paths:
                 $ref: "#/components/schemas/SahmiScenario"
         "404":
           description: Scenario not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "400":
+          description: Invalid scenario identifier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: MongoDB connection unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "500":
+          description: Scenario could not be read or validated
           content:
             application/json:
               schema:
@@ -77,6 +97,8 @@ components:
           type: string
         periodLabel:
           type: string
+        dataInfo:
+          $ref: "#/components/schemas/ScenarioDataInfo"
         player:
           $ref: "#/components/schemas/ScenarioPlayer"
         assets:
@@ -103,6 +125,7 @@ components:
         - scenarioId
         - title
         - periodLabel
+        - dataInfo
         - player
         - assets
         - monthlyPrices
@@ -141,7 +164,7 @@ components:
       properties:
         month:
           type: string
-          format: date
+          pattern: '^\d{4}-\d{2}$'
         stockFund:
           type: number
         bondFund:
@@ -158,7 +181,7 @@ components:
           type: string
         month:
           type: string
-          format: date
+          pattern: '^\d{4}-\d{2}$'
         type:
           type: string
           enum: [marketDrop, surpriseExpense]
@@ -181,4 +204,18 @@ components:
         text:
           type: string
       required: [decision, title, text]
+    ScenarioDataInfo:
+      type: object
+      properties:
+        sourceName:
+          type: string
+        retrievedOn:
+          type: string
+        priceCurrency:
+          type: string
+        pricingNote:
+          type: string
+        limitations:
+          type: string
+      required: [sourceName, retrievedOn, priceCurrency, pricingNote, limitations]
 

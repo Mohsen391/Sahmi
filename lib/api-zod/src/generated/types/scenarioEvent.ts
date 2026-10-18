@@ -9,7 +9,8 @@ import type { ScenarioEventType } from './scenarioEventType';
 
 export interface ScenarioEvent {
   id: string;
-  month: Date;
+  /** @pattern ^\d{4}-\d{2}$ */
+  month: string;
   type: ScenarioEventType;
   title: string;
   description: string;

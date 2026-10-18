@@ -1,1 +1,0 @@
-- [Sahmi scope and data rules](sahmi-scope.md) — strict educational MVP, real historical data only, Arabic Kuwaiti RTL, no added features or deployment setup yet.

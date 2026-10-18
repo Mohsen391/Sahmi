@@ -8,6 +8,7 @@
 import type { DecisionExplanation } from './decisionExplanation';
 import type { MonthlyPrices } from './monthlyPrices';
 import type { ScenarioAsset } from './scenarioAsset';
+import type { ScenarioDataInfo } from './scenarioDataInfo';
 import type { ScenarioEvent } from './scenarioEvent';
 import type { ScenarioPlayer } from './scenarioPlayer';
 
@@ -15,6 +16,7 @@ export interface SahmiScenario {
   scenarioId: string;
   title: string;
   periodLabel: string;
+  dataInfo: ScenarioDataInfo;
   player: ScenarioPlayer;
   assets: ScenarioAsset[];
   monthlyPrices: MonthlyPrices[];

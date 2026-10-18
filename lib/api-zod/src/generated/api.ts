@@ -21,13 +21,18 @@ export const HealthCheckResponse = zod.object({
  * Returns the stored scenario, historical prices, events, and prewritten Arabic explanations
  * @summary Get an investing learning scenario
  */
+export const getSahmiScenarioPathScenarioIdMax = 80;
 
+
+export const getSahmiScenarioPathScenarioIdRegExp = new RegExp('^[a-z0-9-]+$');
 
 
 export const GetSahmiScenarioParams = zod.object({
-  "scenarioId": zod.coerce.string().min(1)
+  "scenarioId": zod.coerce.string().min(1).max(getSahmiScenarioPathScenarioIdMax).regex(getSahmiScenarioPathScenarioIdRegExp)
 })
 
+export const getSahmiScenarioResponseMonthlyPricesItemMonthRegExp = new RegExp('^\\d{4}-\\d{2}$');
+export const getSahmiScenarioResponseEventsItemMonthRegExp = new RegExp('^\\d{4}-\\d{2}$');
 export const getSahmiScenarioResponseDecisionExplanationsItemDecisionMax = 3;
 
 export const getSahmiScenarioResponseDecisionExplanationsMin = 3;
@@ -39,6 +44,13 @@ export const GetSahmiScenarioResponse = zod.object({
   "scenarioId": zod.string(),
   "title": zod.string(),
   "periodLabel": zod.string(),
+  "dataInfo": zod.object({
+  "sourceName": zod.string(),
+  "retrievedOn": zod.string(),
+  "priceCurrency": zod.string(),
+  "pricingNote": zod.string(),
+  "limitations": zod.string()
+}),
   "player": zod.object({
   "name": zod.string(),
   "age": zod.number().int(),
@@ -53,7 +65,7 @@ export const GetSahmiScenarioResponse = zod.object({
   "source": zod.string()
 })),
   "monthlyPrices": zod.array(zod.object({
-  "month": zod.coerce.date(),
+  "month": zod.string().regex(getSahmiScenarioResponseMonthlyPricesItemMonthRegExp),
   "stockFund": zod.number(),
   "bondFund": zod.number(),
   "gold": zod.number(),
@@ -61,7 +73,7 @@ export const GetSahmiScenarioResponse = zod.object({
 })),
   "events": zod.array(zod.object({
   "id": zod.string(),
-  "month": zod.coerce.date(),
+  "month": zod.string().regex(getSahmiScenarioResponseEventsItemMonthRegExp),
   "type": zod.enum(['marketDrop', 'surpriseExpense']),
   "title": zod.string(),
   "description": zod.string(),

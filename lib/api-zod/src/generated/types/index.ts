@@ -13,6 +13,7 @@ export * from './monthlyPrices';
 export * from './sahmiScenario';
 export * from './scenarioAsset';
 export * from './scenarioAssetId';
+export * from './scenarioDataInfo';
 export * from './scenarioEvent';
 export * from './scenarioEventType';
 export * from './scenarioPlayer';

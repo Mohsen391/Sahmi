@@ -7,7 +7,8 @@
  */
 
 export interface MonthlyPrices {
-  month: Date;
+  /** @pattern ^\d{4}-\d{2}$ */
+  month: string;
   stockFund: number;
   bondFund: number;
   gold: number;

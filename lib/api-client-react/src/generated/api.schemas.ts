@@ -13,6 +13,14 @@ export interface ApiError {
   error: string;
 }
 
+export interface ScenarioDataInfo {
+  sourceName: string;
+  retrievedOn: string;
+  priceCurrency: string;
+  pricingNote: string;
+  limitations: string;
+}
+
 export interface ScenarioPlayer {
   name: string;
   age: number;
@@ -40,6 +48,7 @@ export interface ScenarioAsset {
 }
 
 export interface MonthlyPrices {
+  /** @pattern ^\d{4}-\d{2}$ */
   month: string;
   stockFund: number;
   bondFund: number;
@@ -57,6 +66,7 @@ export const ScenarioEventType = {
 
 export interface ScenarioEvent {
   id: string;
+  /** @pattern ^\d{4}-\d{2}$ */
   month: string;
   type: ScenarioEventType;
   title: string;
@@ -79,6 +89,7 @@ export interface SahmiScenario {
   scenarioId: string;
   title: string;
   periodLabel: string;
+  dataInfo: ScenarioDataInfo;
   player: ScenarioPlayer;
   assets: ScenarioAsset[];
   monthlyPrices: MonthlyPrices[];
