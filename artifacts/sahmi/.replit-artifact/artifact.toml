@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Sahmi | سهمي"
+description = "An Arabic-first investing learning game for young adults in Kuwait. Players guide Fahad through one real historical market year using fake KD, with exactly three learning decisions and a score based on decision quality rather than profit."
+version = "1.0.0"
+id = "artifacts/sahmi"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19513
+
+[services.development]
+run = "pnpm --filter @workspace/sahmi run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sahmi", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/sahmi/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19513"
+BASE_PATH = "/"

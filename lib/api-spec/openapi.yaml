@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: scenarios
+    description: Sahmi learning scenarios
 paths:
   /healthz:
     get:
@@ -24,6 +26,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /scenarios/{scenarioId}:
+    get:
+      operationId: getSahmiScenario
+      tags: [scenarios]
+      summary: Get an investing learning scenario
+      description: Returns the stored scenario, historical prices, events, and prewritten Arabic explanations
+      parameters:
+        - name: scenarioId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Scenario
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SahmiScenario"
+        "404":
+          description: Scenario not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +61,124 @@ components:
           type: string
       required:
         - status
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+    SahmiScenario:
+      type: object
+      properties:
+        scenarioId:
+          type: string
+        title:
+          type: string
+        periodLabel:
+          type: string
+        player:
+          $ref: "#/components/schemas/ScenarioPlayer"
+        assets:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScenarioAsset"
+        monthlyPrices:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthlyPrices"
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScenarioEvent"
+        decisionExplanations:
+          type: array
+          minItems: 3
+          maxItems: 3
+          items:
+            $ref: "#/components/schemas/DecisionExplanation"
+        disclaimer:
+          type: string
+      required:
+        - scenarioId
+        - title
+        - periodLabel
+        - player
+        - assets
+        - monthlyPrices
+        - events
+        - decisionExplanations
+        - disclaimer
+    ScenarioPlayer:
+      type: object
+      properties:
+        name:
+          type: string
+        age:
+          type: integer
+        startingSavingsKd:
+          type: number
+        goal:
+          type: string
+        goalMonths:
+          type: integer
+      required: [name, age, startingSavingsKd, goal, goalMonths]
+    ScenarioAsset:
+      type: object
+      properties:
+        id:
+          type: string
+          enum: [stockFund, bondFund, gold, cash]
+        label:
+          type: string
+        symbol:
+          type: ["string", "null"]
+        source:
+          type: string
+      required: [id, label, symbol, source]
+    MonthlyPrices:
+      type: object
+      properties:
+        month:
+          type: string
+          format: date
+        stockFund:
+          type: number
+        bondFund:
+          type: number
+        gold:
+          type: number
+        cash:
+          type: number
+      required: [month, stockFund, bondFund, gold, cash]
+    ScenarioEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        month:
+          type: string
+          format: date
+        type:
+          type: string
+          enum: [marketDrop, surpriseExpense]
+        title:
+          type: string
+        description:
+          type: string
+        amountKd:
+          type: ["number", "null"]
+      required: [id, month, type, title, description, amountKd]
+    DecisionExplanation:
+      type: object
+      properties:
+        decision:
+          type: integer
+          minimum: 1
+          maximum: 3
+        title:
+          type: string
+        text:
+          type: string
+      required: [decision, title, text]
 
