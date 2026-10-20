@@ -1,0 +1,15 @@
+Stage 1 is approved. Before Stage 2, make these small fixes:
+1. Change Fahad's goal text to: he plans to buy a car in 2 years, and this game plays his first 12 months. Remove the redundant "خلال 24 شهر". Do not add a numeric target. The result screen will show progress against the starting 1,000 KD, not "goal reached".
+2. Add a one-line simple Arabic description (Kuwaiti dialect) and a risk label to each of SPY, AGG and GLD. Show me the texts before you store them.
+3. Use one digit style (Western digits, like 2020 and 1,000) everywhere.
+4. Fix the cash card text: split it into two sentences.
+
+Then start Stage 2 (three decisions). Rules:
+1. All game logic runs on the server, not in React: validate the allocation (3 to 4 options, no negative amounts, total exactly 1,000 KD), calculate balances from the stored prices, and return the results through the API.
+2. Decision 1 (start of Jan 2020): split 1,000 KD across the options. Cash is one of the options and stays flat.
+3. Decision 2 (end of Mar 2020, after the drop): hold, sell some, or buy more. "Buy more" can only use the cash the player kept. If they have no cash, disable it and explain why in simple Arabic.
+4. Decision 3 (Apr 2020): Fahad needs 300 KD for a surprise expense. The player chooses where it comes from (cash, or selling from specific assets). If the chosen source doesn't have enough, show a clear error.
+5. Pre-written Arabic explanations are stored in the scenario in MongoDB, not hardcoded and not generated. Before you store them, show me all the texts so I can review the wording. Use simple Kuwaiti dialect, no complex terms. Do not say selling is always wrong or that the market will always recover. Explain what happened, why people react this way, and what a different choice would have done.
+6. Save each decision in the database for the current session (no login).
+7. No chart, mood face, score or badge yet. Those are Stages 3 and 4.
+8. Keep following replit.md and the Sahmi rules. When done, tell me exactly how to test it, including one test where I put 100% in stocks and then face the 300 KD expense.
