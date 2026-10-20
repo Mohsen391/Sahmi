@@ -4,7 +4,7 @@ import { test } from "node:test";
 import mongoose from "mongoose";
 import app from "../app";
 
-test("anonymous game completion survives a fresh API read and rejects a fourth decision", async () => {
+test("anonymous game sessions stay private across cookies, survive refresh, and reject a fourth decision", async () => {
   const server = createServer(app);
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);
@@ -24,14 +24,24 @@ test("anonymous game completion survives a fresh API read and rejects a fourth d
     assert.ok(cookie, "the response should contain the game session cookie");
     const sessionHeader = `sahmi_session=${cookie}`;
 
-    const submit = async (body: Record<string, unknown>) => {
+    const secondStarted = await fetch(baseUrl, { method: "POST" });
+    assert.equal(secondStarted.status, 201);
+    const secondSetCookie = secondStarted.headers.get("set-cookie");
+    assert.ok(secondSetCookie, "the second anonymous game should have its own cookie");
+    const secondCookie = secondSetCookie.match(/(?:^|,\s*)sahmi_session=([^;,]+)/)?.[1];
+    assert.ok(secondCookie, "the second response should contain a game session cookie");
+    const secondSessionHeader = `sahmi_session=${secondCookie}`;
+    assert.notEqual(sessionHeader, secondSessionHeader, "independent games should receive distinct cookies");
+
+    const submitWithCookie = async (cookieHeader: string, body: Record<string, unknown>) => {
       const response = await fetch(`${baseUrl}/decisions`, {
         method: "POST",
-        headers: { "content-type": "application/json", cookie: sessionHeader },
+        headers: { "content-type": "application/json", cookie: cookieHeader },
         body: JSON.stringify(body),
       });
       return { response, body: await response.json() as Record<string, any> };
     };
+    const submit = (body: Record<string, unknown>) => submitWithCookie(sessionHeader, body);
 
     const first = await submit({
       decision: 1, version: 0,
@@ -67,6 +77,33 @@ test("anonymous game completion survives a fresh API read and rejects a fourth d
     assert.equal(refreshedResponse.status, 200);
     const refreshed = await refreshedResponse.json();
     assert.deepEqual(refreshed, completed);
+
+    const secondDecision = await submitWithCookie(secondSessionHeader, {
+      decision: 1, version: 0,
+      amounts: { stockFund: 0, bondFund: 0, gold: 0, cash: 1000 },
+    });
+    assert.equal(secondDecision.response.status, 200);
+    assert.notDeepEqual(secondDecision.body, completed, "the two games should have distinct saved states");
+
+    const secondGameRead = await fetch(baseUrl, {
+      headers: { cookie: secondSessionHeader },
+    });
+    assert.equal(secondGameRead.status, 200);
+    assert.deepEqual(await secondGameRead.json(), secondDecision.body);
+
+    const firstGameRead = await fetch(baseUrl, {
+      headers: { cookie: sessionHeader },
+    });
+    assert.equal(firstGameRead.status, 200);
+    assert.deepEqual(await firstGameRead.json(), completed);
+
+    const missingCookieRead = await fetch(baseUrl);
+    assert.equal(missingCookieRead.status, 404, "a request without a session cookie must not read either game");
+
+    const unrelatedCookieRead = await fetch(baseUrl, {
+      headers: { cookie: `sahmi_session=${"a".repeat(64)}` },
+    });
+    assert.equal(unrelatedCookieRead.status, 404, "an unrelated cookie must not read either game");
 
     const fourth = await submit({ decision: 4, version: 3, action: "hold" });
     assert.equal(fourth.response.status, 400);
