@@ -186,9 +186,43 @@ components:
         balances:
           $ref: "#/components/schemas/AssetAmounts"
         totalKd: { type: number }
+    MonthlyPlaybackPoint:
+      type: object
+      additionalProperties: false
+      required: [month, totalKd]
+      properties:
+        month: { type: string }
+        totalKd: { type: number, minimum: 0 }
+    FinalOutcome:
+      type: object
+      additionalProperties: false
+      required:
+        - score
+        - diversificationScore
+        - calmScore
+        - cashReadinessScore
+        - badgeTitle
+        - badgeText
+        - diversificationText
+        - calmText
+        - cashReadinessText
+        - expenseNote
+        - portfolioChangeKd
+      properties:
+        score: { type: integer, minimum: 0, maximum: 100 }
+        diversificationScore: { type: integer, minimum: 0, maximum: 40 }
+        calmScore: { type: integer, minimum: 0, maximum: 30 }
+        cashReadinessScore: { type: integer, minimum: 0, maximum: 30 }
+        badgeTitle: { type: string }
+        badgeText: { type: string }
+        diversificationText: { type: string }
+        calmText: { type: string }
+        cashReadinessText: { type: string }
+        expenseNote: { type: string }
+        portfolioChangeKd: { type: number }
     GameState:
       type: object
-      required: [version, nextDecision, month, balances, totalKd, startingSavingsKd, expensePaidKd, decisions, buyDisabledReason]
+      required: [version, nextDecision, month, balances, totalKd, startingSavingsKd, expensePaidKd, decisions, buyDisabledReason, monthlyPlayback, finalOutcome]
       properties:
         version: { type: integer }
         nextDecision: { type: integer, minimum: 1, maximum: 4 }
@@ -203,6 +237,14 @@ components:
           items:
             $ref: "#/components/schemas/SavedGameDecision"
         buyDisabledReason: { type: ["string", "null"] }
+        monthlyPlayback:
+          type: array
+          items:
+            $ref: "#/components/schemas/MonthlyPlaybackPoint"
+        finalOutcome:
+          oneOf:
+            - $ref: "#/components/schemas/FinalOutcome"
+            - type: "null"
     HealthStatus:
       type: object
       properties:

@@ -58,6 +58,42 @@ export interface SavedGameDecision {
   totalKd: number;
 }
 
+export interface MonthlyPlaybackPoint {
+  month: string;
+  /** @minimum 0 */
+  totalKd: number;
+}
+
+export interface FinalOutcome {
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  score: number;
+  /**
+     * @minimum 0
+     * @maximum 40
+     */
+  diversificationScore: number;
+  /**
+     * @minimum 0
+     * @maximum 30
+     */
+  calmScore: number;
+  /**
+     * @minimum 0
+     * @maximum 30
+     */
+  cashReadinessScore: number;
+  badgeTitle: string;
+  badgeText: string;
+  diversificationText: string;
+  calmText: string;
+  cashReadinessText: string;
+  expenseNote: string;
+  portfolioChangeKd: number;
+}
+
 export interface GameState {
   version: number;
   /**
@@ -73,6 +109,8 @@ export interface GameState {
   decisions: SavedGameDecision[];
   /** @nullable */
   buyDisabledReason: string | null;
+  monthlyPlayback: MonthlyPlaybackPoint[];
+  finalOutcome: FinalOutcome | null;
 }
 
 export interface HealthStatus {

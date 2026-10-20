@@ -29,6 +29,20 @@ export const getSahmiGameResponseDecisionsItemBalancesGoldMin = 0;
 
 export const getSahmiGameResponseDecisionsItemBalancesCashMin = 0;
 
+export const getSahmiGameResponseMonthlyPlaybackItemTotalKdMin = 0;
+
+export const getSahmiGameResponseFinalOutcomeOneScoreMin = 0;
+export const getSahmiGameResponseFinalOutcomeOneScoreMax = 100;
+
+export const getSahmiGameResponseFinalOutcomeOneDiversificationScoreMin = 0;
+export const getSahmiGameResponseFinalOutcomeOneDiversificationScoreMax = 40;
+
+export const getSahmiGameResponseFinalOutcomeOneCalmScoreMin = 0;
+export const getSahmiGameResponseFinalOutcomeOneCalmScoreMax = 30;
+
+export const getSahmiGameResponseFinalOutcomeOneCashReadinessScoreMin = 0;
+export const getSahmiGameResponseFinalOutcomeOneCashReadinessScoreMax = 30;
+
 
 
 export const GetSahmiGameResponse = zod.object({
@@ -57,7 +71,24 @@ export const GetSahmiGameResponse = zod.object({
 }),
   "totalKd": zod.number()
 })),
-  "buyDisabledReason": zod.string().nullable()
+  "buyDisabledReason": zod.string().nullable(),
+  "monthlyPlayback": zod.array(zod.object({
+  "month": zod.string(),
+  "totalKd": zod.number().min(getSahmiGameResponseMonthlyPlaybackItemTotalKdMin)
+})),
+  "finalOutcome": zod.union([zod.object({
+  "score": zod.number().int().min(getSahmiGameResponseFinalOutcomeOneScoreMin).max(getSahmiGameResponseFinalOutcomeOneScoreMax),
+  "diversificationScore": zod.number().int().min(getSahmiGameResponseFinalOutcomeOneDiversificationScoreMin).max(getSahmiGameResponseFinalOutcomeOneDiversificationScoreMax),
+  "calmScore": zod.number().int().min(getSahmiGameResponseFinalOutcomeOneCalmScoreMin).max(getSahmiGameResponseFinalOutcomeOneCalmScoreMax),
+  "cashReadinessScore": zod.number().int().min(getSahmiGameResponseFinalOutcomeOneCashReadinessScoreMin).max(getSahmiGameResponseFinalOutcomeOneCashReadinessScoreMax),
+  "badgeTitle": zod.string(),
+  "badgeText": zod.string(),
+  "diversificationText": zod.string(),
+  "calmText": zod.string(),
+  "cashReadinessText": zod.string(),
+  "expenseNote": zod.string(),
+  "portfolioChangeKd": zod.number()
+}),zod.null()])
 })
 
 
@@ -81,6 +112,20 @@ export const startSahmiGameResponseDecisionsItemBalancesBondFundMin = 0;
 export const startSahmiGameResponseDecisionsItemBalancesGoldMin = 0;
 
 export const startSahmiGameResponseDecisionsItemBalancesCashMin = 0;
+
+export const startSahmiGameResponseMonthlyPlaybackItemTotalKdMin = 0;
+
+export const startSahmiGameResponseFinalOutcomeOneScoreMin = 0;
+export const startSahmiGameResponseFinalOutcomeOneScoreMax = 100;
+
+export const startSahmiGameResponseFinalOutcomeOneDiversificationScoreMin = 0;
+export const startSahmiGameResponseFinalOutcomeOneDiversificationScoreMax = 40;
+
+export const startSahmiGameResponseFinalOutcomeOneCalmScoreMin = 0;
+export const startSahmiGameResponseFinalOutcomeOneCalmScoreMax = 30;
+
+export const startSahmiGameResponseFinalOutcomeOneCashReadinessScoreMin = 0;
+export const startSahmiGameResponseFinalOutcomeOneCashReadinessScoreMax = 30;
 
 
 
@@ -110,7 +155,24 @@ export const StartSahmiGameResponse = zod.object({
 }),
   "totalKd": zod.number()
 })),
-  "buyDisabledReason": zod.string().nullable()
+  "buyDisabledReason": zod.string().nullable(),
+  "monthlyPlayback": zod.array(zod.object({
+  "month": zod.string(),
+  "totalKd": zod.number().min(startSahmiGameResponseMonthlyPlaybackItemTotalKdMin)
+})),
+  "finalOutcome": zod.union([zod.object({
+  "score": zod.number().int().min(startSahmiGameResponseFinalOutcomeOneScoreMin).max(startSahmiGameResponseFinalOutcomeOneScoreMax),
+  "diversificationScore": zod.number().int().min(startSahmiGameResponseFinalOutcomeOneDiversificationScoreMin).max(startSahmiGameResponseFinalOutcomeOneDiversificationScoreMax),
+  "calmScore": zod.number().int().min(startSahmiGameResponseFinalOutcomeOneCalmScoreMin).max(startSahmiGameResponseFinalOutcomeOneCalmScoreMax),
+  "cashReadinessScore": zod.number().int().min(startSahmiGameResponseFinalOutcomeOneCashReadinessScoreMin).max(startSahmiGameResponseFinalOutcomeOneCashReadinessScoreMax),
+  "badgeTitle": zod.string(),
+  "badgeText": zod.string(),
+  "diversificationText": zod.string(),
+  "calmText": zod.string(),
+  "cashReadinessText": zod.string(),
+  "expenseNote": zod.string(),
+  "portfolioChangeKd": zod.number()
+}),zod.null()])
 })
 
 
@@ -165,6 +227,20 @@ export const submitSahmiDecisionResponseDecisionsItemBalancesGoldMin = 0;
 
 export const submitSahmiDecisionResponseDecisionsItemBalancesCashMin = 0;
 
+export const submitSahmiDecisionResponseMonthlyPlaybackItemTotalKdMin = 0;
+
+export const submitSahmiDecisionResponseFinalOutcomeOneScoreMin = 0;
+export const submitSahmiDecisionResponseFinalOutcomeOneScoreMax = 100;
+
+export const submitSahmiDecisionResponseFinalOutcomeOneDiversificationScoreMin = 0;
+export const submitSahmiDecisionResponseFinalOutcomeOneDiversificationScoreMax = 40;
+
+export const submitSahmiDecisionResponseFinalOutcomeOneCalmScoreMin = 0;
+export const submitSahmiDecisionResponseFinalOutcomeOneCalmScoreMax = 30;
+
+export const submitSahmiDecisionResponseFinalOutcomeOneCashReadinessScoreMin = 0;
+export const submitSahmiDecisionResponseFinalOutcomeOneCashReadinessScoreMax = 30;
+
 
 
 export const SubmitSahmiDecisionResponse = zod.object({
@@ -193,7 +269,24 @@ export const SubmitSahmiDecisionResponse = zod.object({
 }),
   "totalKd": zod.number()
 })),
-  "buyDisabledReason": zod.string().nullable()
+  "buyDisabledReason": zod.string().nullable(),
+  "monthlyPlayback": zod.array(zod.object({
+  "month": zod.string(),
+  "totalKd": zod.number().min(submitSahmiDecisionResponseMonthlyPlaybackItemTotalKdMin)
+})),
+  "finalOutcome": zod.union([zod.object({
+  "score": zod.number().int().min(submitSahmiDecisionResponseFinalOutcomeOneScoreMin).max(submitSahmiDecisionResponseFinalOutcomeOneScoreMax),
+  "diversificationScore": zod.number().int().min(submitSahmiDecisionResponseFinalOutcomeOneDiversificationScoreMin).max(submitSahmiDecisionResponseFinalOutcomeOneDiversificationScoreMax),
+  "calmScore": zod.number().int().min(submitSahmiDecisionResponseFinalOutcomeOneCalmScoreMin).max(submitSahmiDecisionResponseFinalOutcomeOneCalmScoreMax),
+  "cashReadinessScore": zod.number().int().min(submitSahmiDecisionResponseFinalOutcomeOneCashReadinessScoreMin).max(submitSahmiDecisionResponseFinalOutcomeOneCashReadinessScoreMax),
+  "badgeTitle": zod.string(),
+  "badgeText": zod.string(),
+  "diversificationText": zod.string(),
+  "calmText": zod.string(),
+  "cashReadinessText": zod.string(),
+  "expenseNote": zod.string(),
+  "portfolioChangeKd": zod.number()
+}),zod.null()])
 })
 
 

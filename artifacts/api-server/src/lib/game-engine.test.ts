@@ -36,10 +36,23 @@ test("initial money is available and stock-only scenario uses exact stored March
   });
   const result = publicGame(scenario, done);
   assert.equal(result.nextDecision, 4);
+  assert.equal(result.month, "2021-01");
   assert.equal(result.expensePaidKd, 300);
-  assert.equal(result.balances.stockFund, floorKd(1000 * 265.67 / 292.53 - 300));
+  const january = scenario.monthlyPrices.find(row => row.month === "2020-01")!;
+  const aprilRow = scenario.monthlyPrices.find(row => row.month === "2020-04")!;
+  const yearEnd = scenario.monthlyPrices.find(row => row.month === "2021-01")!;
+  assert.equal(result.decisions[2]!.balances.stockFund, floorKd(1000 * aprilRow.stockFund / january.stockFund - 300));
+  assert.equal(result.balances.stockFund, floorKd((1000 / january.stockFund - 300 / aprilRow.stockFund) * yearEnd.stockFund));
   assert.equal(result.decisions[2]!.explanation, scenario.gameTexts.expenseSale);
   assert.equal(result.decisions.length, 3);
+  assert.equal(result.monthlyPlayback.length, 13);
+  assert.equal(result.monthlyPlayback[0]!.month, "2020-01");
+  assert.equal(result.monthlyPlayback.at(-1)!.month, "2021-01");
+  assert.equal(result.monthlyPlayback.at(-1)!.totalKd, result.totalKd);
+  assert.equal(result.finalOutcome?.score, 43);
+  assert.equal(result.finalOutcome?.portfolioChangeKd, Math.round((result.totalKd - 1000) * 1000) / 1000);
+  assert.equal(result.finalOutcome?.calmScore, 30);
+  assert.equal(result.finalOutcome?.cashReadinessScore, 0);
 });
 
 test("invalid allocations, precision, and decision order cannot mutate original state", () => {
@@ -112,4 +125,31 @@ test("cash remains flat; cash, mixed and multi-asset expense funding are validat
     decision: 3, version: 2, amounts: { ...emptyAmounts(), cash: 300 },
   }));
   assert.equal(diversified.decisions.length, 2);
+});
+
+test("final decision score reflects allocation, selling during the drop, and pre-expense cash—not portfolio gains", () => {
+  const allocated = allocate(400, 300, 200, 100);
+  const sold = applyDecision(scenario, allocated, {
+    decision: 2, version: 1, action: "sell", asset: "stockFund", amountKd: 100,
+  });
+  const done = applyDecision(scenario, sold, {
+    decision: 3, version: 2, amounts: { ...emptyAmounts(), cash: 300 },
+  });
+  const result = publicGame(scenario, done);
+  const outcome = result.finalOutcome!;
+  assert.equal(outcome.diversificationScore, 40);
+  assert.ok(outcome.calmScore < 30);
+  assert.equal(outcome.cashReadinessScore, 30);
+  assert.equal(outcome.score, outcome.diversificationScore + outcome.calmScore + outcome.cashReadinessScore);
+  assert.equal(outcome.badgeTitle, scenario.gameTexts.badgeBalancedTitle);
+  assert.equal(outcome.expenseNote, scenario.gameTexts.expenseNote);
+
+  const alteredEndPrices = structuredClone(scenario);
+  const finalObservation = alteredEndPrices.monthlyPrices.at(-1)!;
+  finalObservation.stockFund *= 2;
+  finalObservation.bondFund *= 2;
+  finalObservation.gold *= 2;
+  const differentMarketValue = publicGame(alteredEndPrices, done);
+  assert.notEqual(differentMarketValue.totalKd, result.totalKd);
+  assert.equal(differentMarketValue.finalOutcome?.score, outcome.score);
 });

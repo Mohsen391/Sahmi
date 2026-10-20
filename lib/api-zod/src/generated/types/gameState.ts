@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { AssetAmounts } from './assetAmounts';
+import type { FinalOutcome } from './finalOutcome';
+import type { MonthlyPlaybackPoint } from './monthlyPlaybackPoint';
 import type { SavedGameDecision } from './savedGameDecision';
 
 export interface GameState {
@@ -23,4 +25,6 @@ export interface GameState {
   decisions: SavedGameDecision[];
   /** @nullable */
   buyDisabledReason: string | null;
+  monthlyPlayback: MonthlyPlaybackPoint[];
+  finalOutcome: FinalOutcome | null;
 }

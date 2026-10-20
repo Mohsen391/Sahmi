@@ -34,6 +34,15 @@ try {
           events: data.events, gameTexts: data.gameTexts,
         } }, { runValidators: true });
         logger.info("Approved Stage 2 copy and event timing stored; historical prices unchanged");
+      } else if (process.argv.includes("--update-stage4")) {
+        const storedPrices = (existing.monthlyPrices as Array<Record<string, unknown>>).map(
+          ({month, stockFund, bondFund, gold, cash}) => ({month, stockFund, bondFund, gold, cash}),
+        );
+        if (JSON.stringify(storedPrices) !== JSON.stringify(data.monthlyPrices)) {
+          throw new Error("A different scenario price series exists. Stop and confirm before replacing it.");
+        }
+        await Scenario.updateOne({ _id: existing._id }, { $set: { gameTexts: data.gameTexts } }, { runValidators: true });
+        logger.info("Approved Stage 4 scoring explanations stored; historical prices unchanged");
       } else {
         logger.info({ scenarioId: data.scenarioId }, "Scenario already imported; no data changed");
       }

@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
+  CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from 'recharts';
+import {
   getGetSahmiGameQueryKey, useGetSahmiGame, useStartSahmiGame, useSubmitSahmiDecision,
   type AssetAmounts, type GameDecisionInput, type GameState, type SahmiScenario,
 } from '@workspace/api-client-react';
@@ -231,11 +234,7 @@ export function Game({ s }: { s: SahmiScenario }) {
       )}
 
       {step >= 4 ? (
-        <div className="mt-6 rounded-2xl bg-primary p-5 text-primary-foreground" data-testid="game-complete">
-          <p className="font-display text-lg font-bold">خلّصت القرارات الثلاثة</p>
-          <p className="mt-2 text-sm opacity-90">انخصم مصروف مفاجئ بقيمة <span className="num">{kd(st.expensePaidKd)}</span> د.ك. الأرصدة فوق هي وضع فهد في <span className="num">{st.month}</span>.</p>
-          <p className="mt-2 text-sm opacity-90">المراحل الجاية للحين مو مفعّلة.</p>
-        </div>
+        <CompletionResult state={st} />
       ) : (
         <div className="mt-6 rounded-2xl border bg-card p-5" data-testid={`form-decision-${step}`}>
           <p className="text-xs text-muted-foreground">القرار <span className="num">{step}</span> من <span className="num">3</span> · <span className="num">{st.month}</span></p>
@@ -247,5 +246,113 @@ export function Game({ s }: { s: SahmiScenario }) {
       )}
       {restart}
     </div>,
+  );
+}
+
+function CompletionResult({ state }: { state: GameState }) {
+  const outcome = state.finalOutcome;
+  const playback = state.monthlyPlayback;
+  const ending = playback[playback.length - 1];
+  const formatChange = (value: number) => `${value > 0 ? '+' : ''}${kd(value)}`;
+  const rubric = outcome ? [
+    { key: 'diversification', title: 'التنويع', score: outcome.diversificationScore, max: 40, text: outcome.diversificationText },
+    { key: 'calm', title: 'الهدوء مع تغيّر السوق', score: outcome.calmScore, max: 30, text: outcome.calmText },
+    { key: 'cash-readiness', title: 'الاستعداد للمصروف', score: outcome.cashReadinessScore, max: 30, text: outcome.cashReadinessText },
+  ] : [];
+
+  return (
+    <section className="rise mt-6 space-y-4" data-testid="game-complete" aria-labelledby="completion-heading">
+      <div className="overflow-hidden rounded-2xl border border-primary/15 bg-card">
+        <div className="grid gap-5 bg-primary/[0.07] p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">
+          <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full border-[5px] border-primary/20 bg-card text-primary" data-testid="final-score">
+            {outcome ? (
+              <>
+                <span className="num text-3xl font-semibold leading-none">{outcome.score}</span>
+                <span className="mt-1 text-xs text-muted-foreground">من 100</span>
+              </>
+            ) : <span className="text-sm text-muted-foreground">—</span>}
+          </div>
+          <div>
+            <p className="text-xs font-semibold tracking-wide text-primary">نتيجة قرارات فهد</p>
+            <h3 id="completion-heading" className="font-display mt-1 text-xl font-bold">درجة قراراتك</h3>
+            {outcome ? (
+              <>
+                <p className="mt-3 inline-flex rounded-full border border-accent/40 bg-accent/15 px-3 py-1 text-sm font-semibold" data-testid="final-badge-title">{outcome.badgeTitle}</p>
+                <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted-foreground" data-testid="final-badge-text">{outcome.badgeText}</p>
+              </>
+            ) : (
+              <p className="mt-2 text-sm text-muted-foreground">اكتملت القرارات، لكن النتيجة غير متاحة حالياً.</p>
+            )}
+          </div>
+        </div>
+
+        {outcome && (
+          <div className="grid gap-3 p-4 sm:grid-cols-3 sm:p-5" data-testid="final-rubric">
+            {rubric.map((item) => (
+              <article key={item.key} className="rounded-xl border bg-background p-4" data-testid={`score-${item.key}`}>
+                <div className="flex items-baseline justify-between gap-2">
+                  <h4 className="text-sm font-semibold">{item.title}</h4>
+                  <p className="shrink-0 text-sm font-semibold text-primary"><span className="num">{kd(item.score)}</span> <span className="font-sans font-normal text-muted-foreground">من <span className="num">{item.max}</span></span></p>
+                </div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(0, Math.min(100, (item.score / item.max) * 100))}%` }} />
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.text}</p>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <section className="rounded-2xl border bg-card p-4 sm:p-5" aria-labelledby="playback-heading" data-testid="monthly-playback">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 id="playback-heading" className="font-display text-lg font-bold">مسار المحفظة</h3>
+            {ending && <p className="mt-1 text-sm text-muted-foreground">قيمة المحفظة بنهاية الفترة</p>}
+          </div>
+          {ending && (
+            <p className="text-end" data-testid="ending-portfolio-value">
+              <span className="num text-xl font-semibold">{kd(ending.totalKd)}</span>
+              <span className="ms-1 text-sm">د.ك</span>
+            </p>
+          )}
+        </div>
+
+        {playback.length > 0 ? (
+          <div className="mt-4 h-56 w-full" dir="ltr" role="img" aria-label="مخطط شهري لقيمة المحفظة من يناير 2020 إلى يناير 2021">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={playback} margin={{ top: 8, right: 10, left: 0, bottom: 2 }}>
+                <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 5" vertical={false} />
+                <XAxis dataKey="month" tickFormatter={(month: string) => month.slice(2)} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} minTickGap={24} />
+                <YAxis width={54} tickFormatter={(value: number) => kd(value)} tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} tickLine={false} axisLine={false} />
+                <Tooltip
+                  formatter={(value: number) => [`${kd(value)} د.ك`, 'قيمة المحفظة']}
+                  labelFormatter={(label: string) => label}
+                  contentStyle={{ direction: 'rtl', borderRadius: 12, borderColor: 'hsl(var(--border))', backgroundColor: 'hsl(var(--card))', color: 'hsl(var(--foreground))' }}
+                />
+                <Line type="monotone" dataKey="totalKd" name="قيمة المحفظة" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3, fill: 'hsl(var(--primary))', strokeWidth: 0 }} activeDot={{ r: 5 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <p className="mt-4 rounded-lg bg-muted p-4 text-sm text-muted-foreground">لا تتوفر بيانات شهرية لعرضها.</p>
+        )}
+        <div className="mt-3 grid gap-3 border-t pt-4 sm:grid-cols-2">
+          {outcome && (
+            <div className="rounded-lg bg-muted/70 p-3" data-testid="portfolio-change">
+              <p className="text-xs text-muted-foreground">التغيّر عن 1,000 د.ك بالبداية</p>
+              <p className={`num mt-1 text-lg font-semibold ${outcome.portfolioChangeKd < 0 ? 'text-destructive' : 'text-primary'}`}>
+                {formatChange(outcome.portfolioChangeKd)} <span className="font-sans text-sm font-normal">د.ك</span>
+              </p>
+            </div>
+          )}
+          <div className="rounded-lg border border-accent/30 bg-accent/10 p-3" data-testid="expense-paid">
+            <p className="text-xs font-medium text-muted-foreground">المصروف المدفوع</p>
+            <p className="num mt-1 text-lg font-semibold">{kd(state.expensePaidKd)} <span className="font-sans text-sm font-normal">د.ك</span></p>
+            {outcome?.expenseNote && <p className="mt-2 text-sm leading-relaxed">{outcome.expenseNote}</p>}
+          </div>
+        </div>
+      </section>
+    </section>
   );
 }
