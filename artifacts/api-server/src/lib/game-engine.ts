@@ -139,7 +139,7 @@ function buildFinalOutcome(s: ScenarioData, game: SessionData, finalBalances: Am
   const expenseAmount = event(s, "surpriseExpense").amountKd;
   if (expenseAmount === null || expenseAmount <= 0) throw new Error("Stored expense is invalid");
   const cashBeforeExpense = finalBalances.cash + expenseAmounts.cash;
-  const cashReadinessScore = Math.round(30 * Math.min(1, Math.max(0, cashBeforeExpense / expenseAmount)));
+  const cashReadinessScore = Math.floor(30 * Math.min(1, Math.max(0, cashBeforeExpense / expenseAmount)));
   const score = diversificationScore + calmScore + cashReadinessScore;
   const badge = score >= 80
     ? ["badgeBalancedTitle", "badgeBalancedText"]

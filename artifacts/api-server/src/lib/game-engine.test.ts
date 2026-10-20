@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readSuppliedScenario } from "./scenario-import";
-import { applyDecision, emptyAmounts, GameError, publicGame, type SessionData } from "./game-engine";
+import { applyDecision, emptyAmounts, GameError, publicGame, type Amounts, type SessionData } from "./game-engine";
 
 const { data: scenario } = await readSuppliedScenario();
 const fresh = (): SessionData => ({
@@ -17,6 +17,21 @@ const hold = (game: SessionData) =>
 const reject = (fn: () => unknown, status = 400) =>
   assert.throws(fn, e => e instanceof GameError && e.status === status);
 const floorKd = (n: number) => Math.floor(n * 1000 + 1e-7) / 1000;
+const finish = (afterMarket: SessionData, amounts: Amounts) => {
+  const completed = applyDecision(scenario, afterMarket, {
+    decision: 3, version: afterMarket.version, amounts,
+  });
+  const outcome = publicGame(scenario, completed).finalOutcome;
+  assert.ok(outcome);
+  return outcome;
+};
+const assertScoreRanges = (outcome: NonNullable<ReturnType<typeof publicGame>["finalOutcome"]>) => {
+  assert.ok(outcome.diversificationScore >= 0 && outcome.diversificationScore <= 40);
+  assert.ok(outcome.calmScore >= 0 && outcome.calmScore <= 30);
+  assert.ok(outcome.cashReadinessScore >= 0 && outcome.cashReadinessScore <= 30);
+  assert.equal(outcome.score, outcome.diversificationScore + outcome.calmScore + outcome.cashReadinessScore);
+  assert.ok(outcome.score >= 0 && outcome.score <= 100);
+};
 
 test("initial money is available and stock-only scenario uses exact stored March and April ratios", () => {
   assert.equal(publicGame(scenario, fresh()).totalKd, 1000);
@@ -152,4 +167,68 @@ test("final decision score reflects allocation, selling during the drop, and pre
   const differentMarketValue = publicGame(alteredEndPrices, done);
   assert.notEqual(differentMarketValue.totalKd, result.totalKd);
   assert.equal(differentMarketValue.finalOutcome?.score, outcome.score);
+});
+
+test("diversification score changes at 100 KD for each investment type and stays capped", () => {
+  for (const asset of ["stockFund", "bondFund", "gold"] as const) {
+    for (const [amount, expectedScore] of [[99.999, 0], [100, 13], [100.001, 13]] as const) {
+      const allocation = { ...emptyAmounts(), [asset]: amount, cash: 1000 - amount };
+      const outcome = finish(hold(applyDecision(scenario, fresh(), {
+        decision: 1, version: 0, amounts: allocation,
+      })), { ...emptyAmounts(), cash: 300 });
+      assert.equal(outcome.diversificationScore, expectedScore, `${asset} allocation ${amount} KD`);
+      assertScoreRanges(outcome);
+    }
+  }
+
+  const fullyDiversified = finish(hold(allocate(100, 700, 100, 100)), {
+    ...emptyAmounts(), cash: 300,
+  });
+  assert.equal(fullyDiversified.diversificationScore, 40);
+  assert.equal(fullyDiversified.score, 100);
+  assertScoreRanges(fullyDiversified);
+});
+
+test("cash-readiness score increases below 300 KD and is capped at and above 300 KD", () => {
+  const cases = [
+    { initialCash: 299.999, expenseCash: 299.999, expectedScore: 29 },
+    { initialCash: 300, expenseCash: 300, expectedScore: 30 },
+    { initialCash: 300.001, expenseCash: 300, expectedScore: 30 },
+  ];
+
+  for (const { initialCash, expenseCash, expectedScore } of cases) {
+    const afterMarket = hold(allocate(1000 - initialCash, initialCash));
+    const outcome = finish(afterMarket, {
+      ...emptyAmounts(),
+      stockFund: 300 - expenseCash,
+      cash: expenseCash,
+    });
+    assert.equal(outcome.cashReadinessScore, expectedScore, `cash before expense: ${initialCash} KD`);
+    assertScoreRanges(outcome);
+  }
+});
+
+test("calm score is capped for no sale, proportional for a partial sale, and zero for a full-portfolio sale", () => {
+  const allocated = allocate(1000);
+  const marketTotal = publicGame(scenario, allocated).totalKd;
+
+  const noSale = finish(hold(allocated), { ...emptyAmounts(), stockFund: 300 });
+  assert.equal(noSale.calmScore, 30);
+  assertScoreRanges(noSale);
+
+  const partialSaleKd = Math.round(marketTotal * 500) / 1000;
+  const partialSale = applyDecision(scenario, allocated, {
+    decision: 2, version: 1, action: "sell", asset: "stockFund", amountKd: partialSaleKd,
+  });
+  const partialOutcome = finish(partialSale, { ...emptyAmounts(), cash: 300 });
+  assert.equal(partialOutcome.calmScore, Math.round(30 * (1 - partialSaleKd / marketTotal)));
+  assert.ok(partialOutcome.calmScore > 0 && partialOutcome.calmScore < 30);
+  assertScoreRanges(partialOutcome);
+
+  const fullSale = applyDecision(scenario, allocated, {
+    decision: 2, version: 1, action: "sell", asset: "stockFund", amountKd: marketTotal,
+  });
+  const fullSaleOutcome = finish(fullSale, { ...emptyAmounts(), cash: 300 });
+  assert.equal(fullSaleOutcome.calmScore, 0);
+  assertScoreRanges(fullSaleOutcome);
 });
