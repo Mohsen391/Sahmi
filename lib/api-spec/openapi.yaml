@@ -13,6 +13,86 @@ tags:
   - name: scenarios
     description: Sahmi learning scenarios
 paths:
+  /game:
+    get:
+      operationId: getSahmiGame
+      summary: Read the current anonymous session game
+      responses:
+        "200":
+          description: Current game
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "404":
+          description: No active session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    post:
+      operationId: startSahmiGame
+      summary: Start a new anonymous game and set an HttpOnly session cookie
+      responses:
+        "201":
+          description: New game
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "503":
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /game/decisions:
+    post:
+      operationId: submitSahmiDecision
+      summary: Validate, calculate, and atomically save a session decision
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameDecisionInput"
+      responses:
+        "200":
+          description: Saved game
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameState"
+        "400":
+          description: Invalid decision or insufficient funds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: No active session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "409":
+          description: Decision already submitted or stale version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "503":
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
   /healthz:
     get:
       operationId: healthCheck
@@ -74,6 +154,55 @@ paths:
                 $ref: "#/components/schemas/ApiError"
 components:
   schemas:
+    AssetAmounts:
+      type: object
+      additionalProperties: false
+      required: [stockFund, bondFund, gold, cash]
+      properties:
+        stockFund: { type: number, minimum: 0 }
+        bondFund: { type: number, minimum: 0 }
+        gold: { type: number, minimum: 0 }
+        cash: { type: number, minimum: 0 }
+    GameDecisionInput:
+      type: object
+      additionalProperties: false
+      required: [decision, version]
+      properties:
+        decision: { type: integer, minimum: 1, maximum: 3 }
+        version: { type: integer, minimum: 0 }
+        amounts:
+          $ref: "#/components/schemas/AssetAmounts"
+        action: { type: string, enum: [hold, sell, buy] }
+        asset: { type: string, enum: [stockFund, bondFund, gold] }
+        amountKd: { type: number, minimum: 0 }
+    SavedGameDecision:
+      type: object
+      required: [decision, month, choice, explanation, balances, totalKd]
+      properties:
+        decision: { type: integer }
+        month: { type: string }
+        choice: { type: string }
+        explanation: { type: string }
+        balances:
+          $ref: "#/components/schemas/AssetAmounts"
+        totalKd: { type: number }
+    GameState:
+      type: object
+      required: [version, nextDecision, month, balances, totalKd, startingSavingsKd, expensePaidKd, decisions, buyDisabledReason]
+      properties:
+        version: { type: integer }
+        nextDecision: { type: integer, minimum: 1, maximum: 4 }
+        month: { type: string }
+        balances:
+          $ref: "#/components/schemas/AssetAmounts"
+        totalKd: { type: number }
+        startingSavingsKd: { type: number }
+        expensePaidKd: { type: number }
+        decisions:
+          type: array
+          items:
+            $ref: "#/components/schemas/SavedGameDecision"
+        buyDisabledReason: { type: ["string", "null"] }
     HealthStatus:
       type: object
       properties:
@@ -121,6 +250,10 @@ components:
             $ref: "#/components/schemas/DecisionExplanation"
         disclaimer:
           type: string
+        gameTexts:
+          type: object
+          additionalProperties:
+            type: string
       required:
         - scenarioId
         - title
@@ -132,6 +265,7 @@ components:
         - events
         - decisionExplanations
         - disclaimer
+        - gameTexts
     ScenarioPlayer:
       type: object
       properties:
@@ -158,7 +292,11 @@ components:
           type: ["string", "null"]
         source:
           type: string
-      required: [id, label, symbol, source]
+        description:
+          type: string
+        riskLabel:
+          type: ["string", "null"]
+      required: [id, label, symbol, source, description, riskLabel]
     MonthlyPrices:
       type: object
       properties:

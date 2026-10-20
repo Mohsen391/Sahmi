@@ -9,6 +9,7 @@
     "start": "node --enable-source-maps ./dist/index.mjs",
     "seed:scenario": "tsx ./src/scripts/import-scenario.ts",
     "validate:prices": "tsx ./src/scripts/import-scenario.ts --validate-only",
+    "test:game": "tsx --test ./src/lib/game-engine.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

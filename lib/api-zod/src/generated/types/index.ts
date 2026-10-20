@@ -7,10 +7,17 @@
  */
 
 export * from './apiError';
+export * from './assetAmounts';
 export * from './decisionExplanation';
+export * from './gameDecisionInput';
+export * from './gameDecisionInputAction';
+export * from './gameDecisionInputAsset';
+export * from './gameState';
 export * from './healthStatus';
 export * from './monthlyPrices';
 export * from './sahmiScenario';
+export * from './sahmiScenarioGameTexts';
+export * from './savedGameDecision';
 export * from './scenarioAsset';
 export * from './scenarioAssetId';
 export * from './scenarioDataInfo';

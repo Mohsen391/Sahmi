@@ -8,6 +8,8 @@ An Arabic RTL investing-learning game for Kuwait beginners, using fake KD and su
 - `pnpm --filter @workspace/sahmi run dev` — React/Vite client (managed workflow).
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate hooks and validation schemas after API contract changes.
 - `pnpm --filter @workspace/api-server run validate:prices` — validate the supplied CSV files without connecting to MongoDB.
+- `pnpm --filter @workspace/api-server run test:game` — check server calculation rules and invalid choices against the supplied prices.
+- `pnpm --filter @workspace/api-server exec tsx src/scripts/import-scenario.ts --update-stage2` — explicitly apply the approved Stage 2 wording and April event timing, only after verifying stored prices and original file hashes are unchanged.
 - `pnpm --filter @workspace/api-server run seed:scenario` — import the approved scenario once into MongoDB; identical reruns make no changes and changed source files require explicit confirmation.
 - `pnpm run typecheck` — full workspace TypeScript checks.
 - Required server-only secret: `MONGODB_URI`. Never print it or put it in source files.
@@ -31,7 +33,14 @@ An Arabic RTL investing-learning game for Kuwait beginners, using fake KD and su
 - One approximately 12-month historical scenario, exactly three decisions: initial allocation; response to a drop; funding a fictional surprise 300 KD expense.
 - Score diversification, calm, and cash readiness, never profit. Prewritten explanations live in the scenario document.
 - Educational only, not investment advice. No real-money activity.
-- Do not add login, saved progress, AI explanations, quizzes, friends, live prices, Shariah mode, payments, or other future features.
+- Do not add login, cross-session saved progress, AI explanations, quizzes, friends, live prices, Shariah mode, payments, or other future features. Save each decision in MongoDB for the current anonymous session.
+- Stage 2 runs every allocation validation, price calculation, trade, and expense deduction on the server. React only collects inputs and displays API results.
+- Anonymous sessions use an HttpOnly session cookie and expire in MongoDB after 24 hours; refresh resumes the current session, but there are no accounts or permanent saved games.
+- Amount inputs use whole fils (up to 3 decimals per KD). Keep full-precision holdings between supplied observations; display spendable balances rounded down to whole fils. Why: never show money the server cannot actually spend.
+- Decisions happen at the start of January 2020, end of March 2020, and April 2020 (fictional 300 KD expense). Buying uses retained cash only; expense sources must have enough funds.
+- Use Western digits everywhere. Fahad plans to buy a car in two years; the game covers his first 12 months. No numeric car target or “goal reached”; later results compare with the starting 1,000 KD.
+- Arabic asset descriptions, risk labels, and choice-specific explanations require the user's wording approval before storage. The Stage 2 wording was explicitly approved.
+- Stage 2 has no chart, mood face, score, or badge; those remain in Stages 3 and 4.
 - Build in small runnable stages. The first stage is scenario loading from MongoDB through the API into the UI; gameplay and visual polish come later.
 
 ## Historical data rules

@@ -17,6 +17,8 @@ const asset = new Schema({
   label: text,
   symbol: { type: String, default: null },
   source: text,
+  description: text,
+  riskLabel: { type: String, default: null },
 }, options);
 
 const prices = new Schema({
@@ -90,6 +92,7 @@ const scenarioSchema = new Schema({
     validate: (value: unknown[]) => value.length === 3,
   },
   disclaimer: text,
+  gameTexts: { type: Map, of: String, required: true },
   dataInfo: { type: dataInfo, required: true },
   importSources: { type: [sourceFile], required: true, select: false },
 }, { timestamps: true, collection: "scenarios" });

@@ -5,6 +5,76 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export interface AssetAmounts {
+  /** @minimum 0 */
+  stockFund: number;
+  /** @minimum 0 */
+  bondFund: number;
+  /** @minimum 0 */
+  gold: number;
+  /** @minimum 0 */
+  cash: number;
+}
+
+export type GameDecisionInputAction = typeof GameDecisionInputAction[keyof typeof GameDecisionInputAction];
+
+
+export const GameDecisionInputAction = {
+  hold: 'hold',
+  sell: 'sell',
+  buy: 'buy',
+} as const;
+
+export type GameDecisionInputAsset = typeof GameDecisionInputAsset[keyof typeof GameDecisionInputAsset];
+
+
+export const GameDecisionInputAsset = {
+  stockFund: 'stockFund',
+  bondFund: 'bondFund',
+  gold: 'gold',
+} as const;
+
+export interface GameDecisionInput {
+  /**
+     * @minimum 1
+     * @maximum 3
+     */
+  decision: number;
+  /** @minimum 0 */
+  version: number;
+  amounts?: AssetAmounts;
+  action?: GameDecisionInputAction;
+  asset?: GameDecisionInputAsset;
+  /** @minimum 0 */
+  amountKd?: number;
+}
+
+export interface SavedGameDecision {
+  decision: number;
+  month: string;
+  choice: string;
+  explanation: string;
+  balances: AssetAmounts;
+  totalKd: number;
+}
+
+export interface GameState {
+  version: number;
+  /**
+     * @minimum 1
+     * @maximum 4
+     */
+  nextDecision: number;
+  month: string;
+  balances: AssetAmounts;
+  totalKd: number;
+  startingSavingsKd: number;
+  expensePaidKd: number;
+  decisions: SavedGameDecision[];
+  /** @nullable */
+  buyDisabledReason: string | null;
+}
+
 export interface HealthStatus {
   status: string;
 }
@@ -12,6 +82,8 @@ export interface HealthStatus {
 export interface ApiError {
   error: string;
 }
+
+export type SahmiScenarioGameTexts = {[key: string]: string};
 
 export interface ScenarioDataInfo {
   sourceName: string;
@@ -45,6 +117,9 @@ export interface ScenarioAsset {
   /** @nullable */
   symbol: string | null;
   source: string;
+  description: string;
+  /** @nullable */
+  riskLabel: string | null;
 }
 
 export interface MonthlyPrices {
@@ -100,5 +175,6 @@ export interface SahmiScenario {
      */
   decisionExplanations: DecisionExplanation[];
   disclaimer: string;
+  gameTexts: SahmiScenarioGameTexts;
 }
 

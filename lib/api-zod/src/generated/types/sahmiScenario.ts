@@ -7,6 +7,7 @@
  */
 import type { DecisionExplanation } from './decisionExplanation';
 import type { MonthlyPrices } from './monthlyPrices';
+import type { SahmiScenarioGameTexts } from './sahmiScenarioGameTexts';
 import type { ScenarioAsset } from './scenarioAsset';
 import type { ScenarioDataInfo } from './scenarioDataInfo';
 import type { ScenarioEvent } from './scenarioEvent';
@@ -27,4 +28,5 @@ export interface SahmiScenario {
      */
   decisionExplanations: DecisionExplanation[];
   disclaimer: string;
+  gameTexts: SahmiScenarioGameTexts;
 }

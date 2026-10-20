@@ -21,7 +21,22 @@ try {
       if (JSON.stringify(hashes) !== JSON.stringify(importSources.map(source => source.sha256))) {
         throw new Error("A different scenario import exists. Stop and confirm before replacing it.");
       }
-      logger.info({ scenarioId: data.scenarioId }, "Scenario already imported; no data changed");
+      if (process.argv.includes("--update-stage2")) {
+        const storedPrices = (existing.monthlyPrices as Array<Record<string, unknown>>).map(
+          ({month, stockFund, bondFund, gold, cash}) => ({month, stockFund, bondFund, gold, cash}),
+        );
+        if (JSON.stringify(storedPrices) !== JSON.stringify(data.monthlyPrices)) {
+          throw new Error("A different scenario price series exists. Stop and confirm before replacing it.");
+        }
+        // Explicit metadata-only migration. Never replace prices or raw provenance.
+        await Scenario.updateOne({ _id: existing._id }, { $set: {
+          player: data.player, periodLabel: data.periodLabel, assets: data.assets,
+          events: data.events, gameTexts: data.gameTexts,
+        } }, { runValidators: true });
+        logger.info("Approved Stage 2 copy and event timing stored; historical prices unchanged");
+      } else {
+        logger.info({ scenarioId: data.scenarioId }, "Scenario already imported; no data changed");
+      }
     } else {
       stage = "save scenario";
       await Scenario.create({ ...data, importSources });

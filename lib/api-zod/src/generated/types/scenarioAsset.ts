@@ -13,4 +13,7 @@ export interface ScenarioAsset {
   /** @nullable */
   symbol: string | null;
   source: string;
+  description: string;
+  /** @nullable */
+  riskLabel: string | null;
 }

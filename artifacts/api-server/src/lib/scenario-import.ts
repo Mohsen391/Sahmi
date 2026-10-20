@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { GetSahmiScenarioResponse } from "@workspace/api-zod";
+import { assetCopy, gameTexts } from "./approved-copy";
 
 const sources = [
   { symbol: "SPY", fileName: "attached_assets/2_spy_1792341686871.csv", key: "stockFund", label: "صندوق أسهم" },
@@ -57,19 +58,20 @@ export async function readSuppliedScenario() {
   const data = GetSahmiScenarioResponse.parse({
     scenarioId: "sahmi-2020",
     title: "فهد وأول ألف دينار",
-    periodLabel: "يناير ٢٠٢٠ — يناير ٢٠٢١",
+    periodLabel: "يناير 2020 — يناير 2021",
     player: {
       name: "فهد",
       age: 22,
       startingSavingsKd: 1000,
-      goal: "يشتري سيارة بعد سنتين",
+      goal: "فهد ناوي يشتري سيارة بعد سنتين. بهاللعبة، بنعيش أول 12 شهر من خطته.",
       goalMonths: 24,
     },
     assets: [
       ...importSources.map(source => ({
         id: source.key, label: source.label, symbol: source.symbol, source: source.sourceUrl,
+        ...assetCopy[source.key],
       })),
-      { id: "cash", label: "كاش", symbol: null, source: "افتراض اللعبة: الكاش ثابت، بدون فوايد." },
+      { id: "cash", label: "كاش", symbol: null, source: "افتراض اللعبة: الكاش ثابت، بدون فوايد.", ...assetCopy.cash },
     ],
     monthlyPrices: expectedMonths.map((month, index) => ({
       month,
@@ -86,9 +88,9 @@ export async function readSuppliedScenario() {
         amountKd: null,
       },
       {
-        id: "surprise-expense", month: "2020-06", type: "surpriseExpense",
+        id: "surprise-expense", month: "2020-04", type: "surpriseExpense",
         title: "طلعت مصاريف مو بالحسبان",
-        description: "فهد يحتاج ٣٠٠ دينار الحين. من وين يطلعهم؟ هالموقف جزء من قصة اللعبة، مو حدث تاريخي.",
+        description: "فهد يحتاج 300 دينار الحين. من وين يطلعهم؟ هالموقف جزء من قصة اللعبة، مو حدث تاريخي.",
         amountKd: 300,
       },
     ],
@@ -107,6 +109,7 @@ export async function readSuppliedScenario() {
       },
     ],
     disclaimer: "هذي لعبة للتعلّم، مو نصيحة استثمارية. كل الفلوس وهمية، وما فيها شراء أو بيع بفلوس حقيقية.",
+    gameTexts,
     dataInfo: {
       sourceName: "Digrin",
       retrievedOn: "2026-10-18",

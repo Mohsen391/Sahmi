@@ -9,6 +9,195 @@ import * as zod from 'zod';
 
 
 /**
+ * @summary Read the current anonymous session game
+ */
+export const getSahmiGameResponseNextDecisionMax = 4;
+
+export const getSahmiGameResponseBalancesStockFundMin = 0;
+
+export const getSahmiGameResponseBalancesBondFundMin = 0;
+
+export const getSahmiGameResponseBalancesGoldMin = 0;
+
+export const getSahmiGameResponseBalancesCashMin = 0;
+
+export const getSahmiGameResponseDecisionsItemBalancesStockFundMin = 0;
+
+export const getSahmiGameResponseDecisionsItemBalancesBondFundMin = 0;
+
+export const getSahmiGameResponseDecisionsItemBalancesGoldMin = 0;
+
+export const getSahmiGameResponseDecisionsItemBalancesCashMin = 0;
+
+
+
+export const GetSahmiGameResponse = zod.object({
+  "version": zod.number().int(),
+  "nextDecision": zod.number().int().min(1).max(getSahmiGameResponseNextDecisionMax),
+  "month": zod.string(),
+  "balances": zod.object({
+  "stockFund": zod.number().min(getSahmiGameResponseBalancesStockFundMin),
+  "bondFund": zod.number().min(getSahmiGameResponseBalancesBondFundMin),
+  "gold": zod.number().min(getSahmiGameResponseBalancesGoldMin),
+  "cash": zod.number().min(getSahmiGameResponseBalancesCashMin)
+}),
+  "totalKd": zod.number(),
+  "startingSavingsKd": zod.number(),
+  "expensePaidKd": zod.number(),
+  "decisions": zod.array(zod.object({
+  "decision": zod.number().int(),
+  "month": zod.string(),
+  "choice": zod.string(),
+  "explanation": zod.string(),
+  "balances": zod.object({
+  "stockFund": zod.number().min(getSahmiGameResponseDecisionsItemBalancesStockFundMin),
+  "bondFund": zod.number().min(getSahmiGameResponseDecisionsItemBalancesBondFundMin),
+  "gold": zod.number().min(getSahmiGameResponseDecisionsItemBalancesGoldMin),
+  "cash": zod.number().min(getSahmiGameResponseDecisionsItemBalancesCashMin)
+}),
+  "totalKd": zod.number()
+})),
+  "buyDisabledReason": zod.string().nullable()
+})
+
+
+/**
+ * @summary Start a new anonymous game and set an HttpOnly session cookie
+ */
+export const startSahmiGameResponseNextDecisionMax = 4;
+
+export const startSahmiGameResponseBalancesStockFundMin = 0;
+
+export const startSahmiGameResponseBalancesBondFundMin = 0;
+
+export const startSahmiGameResponseBalancesGoldMin = 0;
+
+export const startSahmiGameResponseBalancesCashMin = 0;
+
+export const startSahmiGameResponseDecisionsItemBalancesStockFundMin = 0;
+
+export const startSahmiGameResponseDecisionsItemBalancesBondFundMin = 0;
+
+export const startSahmiGameResponseDecisionsItemBalancesGoldMin = 0;
+
+export const startSahmiGameResponseDecisionsItemBalancesCashMin = 0;
+
+
+
+export const StartSahmiGameResponse = zod.object({
+  "version": zod.number().int(),
+  "nextDecision": zod.number().int().min(1).max(startSahmiGameResponseNextDecisionMax),
+  "month": zod.string(),
+  "balances": zod.object({
+  "stockFund": zod.number().min(startSahmiGameResponseBalancesStockFundMin),
+  "bondFund": zod.number().min(startSahmiGameResponseBalancesBondFundMin),
+  "gold": zod.number().min(startSahmiGameResponseBalancesGoldMin),
+  "cash": zod.number().min(startSahmiGameResponseBalancesCashMin)
+}),
+  "totalKd": zod.number(),
+  "startingSavingsKd": zod.number(),
+  "expensePaidKd": zod.number(),
+  "decisions": zod.array(zod.object({
+  "decision": zod.number().int(),
+  "month": zod.string(),
+  "choice": zod.string(),
+  "explanation": zod.string(),
+  "balances": zod.object({
+  "stockFund": zod.number().min(startSahmiGameResponseDecisionsItemBalancesStockFundMin),
+  "bondFund": zod.number().min(startSahmiGameResponseDecisionsItemBalancesBondFundMin),
+  "gold": zod.number().min(startSahmiGameResponseDecisionsItemBalancesGoldMin),
+  "cash": zod.number().min(startSahmiGameResponseDecisionsItemBalancesCashMin)
+}),
+  "totalKd": zod.number()
+})),
+  "buyDisabledReason": zod.string().nullable()
+})
+
+
+/**
+ * @summary Validate, calculate, and atomically save a session decision
+ */
+export const submitSahmiDecisionBodyDecisionMax = 3;
+
+export const submitSahmiDecisionBodyVersionMin = 0;
+
+export const submitSahmiDecisionBodyAmountsStockFundMin = 0;
+
+export const submitSahmiDecisionBodyAmountsBondFundMin = 0;
+
+export const submitSahmiDecisionBodyAmountsGoldMin = 0;
+
+export const submitSahmiDecisionBodyAmountsCashMin = 0;
+
+export const submitSahmiDecisionBodyAmountKdMin = 0;
+
+
+
+export const SubmitSahmiDecisionBody = zod.object({
+  "decision": zod.number().int().min(1).max(submitSahmiDecisionBodyDecisionMax),
+  "version": zod.number().int().min(submitSahmiDecisionBodyVersionMin),
+  "amounts": zod.object({
+  "stockFund": zod.number().min(submitSahmiDecisionBodyAmountsStockFundMin),
+  "bondFund": zod.number().min(submitSahmiDecisionBodyAmountsBondFundMin),
+  "gold": zod.number().min(submitSahmiDecisionBodyAmountsGoldMin),
+  "cash": zod.number().min(submitSahmiDecisionBodyAmountsCashMin)
+}).optional(),
+  "action": zod.enum(['hold', 'sell', 'buy']).optional(),
+  "asset": zod.enum(['stockFund', 'bondFund', 'gold']).optional(),
+  "amountKd": zod.number().min(submitSahmiDecisionBodyAmountKdMin).optional()
+})
+
+export const submitSahmiDecisionResponseNextDecisionMax = 4;
+
+export const submitSahmiDecisionResponseBalancesStockFundMin = 0;
+
+export const submitSahmiDecisionResponseBalancesBondFundMin = 0;
+
+export const submitSahmiDecisionResponseBalancesGoldMin = 0;
+
+export const submitSahmiDecisionResponseBalancesCashMin = 0;
+
+export const submitSahmiDecisionResponseDecisionsItemBalancesStockFundMin = 0;
+
+export const submitSahmiDecisionResponseDecisionsItemBalancesBondFundMin = 0;
+
+export const submitSahmiDecisionResponseDecisionsItemBalancesGoldMin = 0;
+
+export const submitSahmiDecisionResponseDecisionsItemBalancesCashMin = 0;
+
+
+
+export const SubmitSahmiDecisionResponse = zod.object({
+  "version": zod.number().int(),
+  "nextDecision": zod.number().int().min(1).max(submitSahmiDecisionResponseNextDecisionMax),
+  "month": zod.string(),
+  "balances": zod.object({
+  "stockFund": zod.number().min(submitSahmiDecisionResponseBalancesStockFundMin),
+  "bondFund": zod.number().min(submitSahmiDecisionResponseBalancesBondFundMin),
+  "gold": zod.number().min(submitSahmiDecisionResponseBalancesGoldMin),
+  "cash": zod.number().min(submitSahmiDecisionResponseBalancesCashMin)
+}),
+  "totalKd": zod.number(),
+  "startingSavingsKd": zod.number(),
+  "expensePaidKd": zod.number(),
+  "decisions": zod.array(zod.object({
+  "decision": zod.number().int(),
+  "month": zod.string(),
+  "choice": zod.string(),
+  "explanation": zod.string(),
+  "balances": zod.object({
+  "stockFund": zod.number().min(submitSahmiDecisionResponseDecisionsItemBalancesStockFundMin),
+  "bondFund": zod.number().min(submitSahmiDecisionResponseDecisionsItemBalancesBondFundMin),
+  "gold": zod.number().min(submitSahmiDecisionResponseDecisionsItemBalancesGoldMin),
+  "cash": zod.number().min(submitSahmiDecisionResponseDecisionsItemBalancesCashMin)
+}),
+  "totalKd": zod.number()
+})),
+  "buyDisabledReason": zod.string().nullable()
+})
+
+
+/**
  * Returns server health status
  * @summary Health check
  */
@@ -62,7 +251,9 @@ export const GetSahmiScenarioResponse = zod.object({
   "id": zod.enum(['stockFund', 'bondFund', 'gold', 'cash']),
   "label": zod.string(),
   "symbol": zod.string().nullable(),
-  "source": zod.string()
+  "source": zod.string(),
+  "description": zod.string(),
+  "riskLabel": zod.string().nullable()
 })),
   "monthlyPrices": zod.array(zod.object({
   "month": zod.string().regex(getSahmiScenarioResponseMonthlyPricesItemMonthRegExp),
@@ -84,7 +275,8 @@ export const GetSahmiScenarioResponse = zod.object({
   "title": zod.string(),
   "text": zod.string()
 })).min(getSahmiScenarioResponseDecisionExplanationsMin).max(getSahmiScenarioResponseDecisionExplanationsMax),
-  "disclaimer": zod.string()
+  "disclaimer": zod.string(),
+  "gameTexts": zod.record(zod.string(), zod.string())
 })
 
 
